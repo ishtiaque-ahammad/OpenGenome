@@ -38,4 +38,4 @@ OpenGenome takes in raw sequencing data (paired end) in .fastq format.
 ## Output
 Once OpenGenome is finished running, the output files will be available in the OpenGenome_Output folder.
 # License
-This project is licensed under the GPLv3 License.
+This project is licensed under the GPL-3.0 license.
