@@ -28,9 +28,11 @@ OpenGenome will ask you to provide the following things:
 
 1.The name of the raw sequencing files i.e. forward and reverse read files
 
-2.Choice of assembler (megahit / spades/ unicycler)
+2.Choice of trimmer (trimmomatic / fastp)
 
-3.The number of CPU cores you want to use
+3.Choice of assembler (megahit / spades/ unicycler)
+
+4.The number of CPU cores you want to use
 
 After you provide the neccessary info, it will start running!
 ## Input
