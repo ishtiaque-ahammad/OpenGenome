@@ -1,0 +1,85 @@
+#!/bin/bash
+
+SECONDS=0
+
+if [ -d "OpenGenome_Output" ]; then
+  rm -r "OpenGenome_Output"
+fi
+mkdir "OpenGenome_Output" 
+
+echo -e "\033[92mWelcome to OpenGenome!\033[0m"
+sleep 3s
+
+read -e -p $'\e[1;32mPlease provide your forward read file name:\e[0m ' R1
+read -e -p $'\e[1;32mPlease provide your reverse read file name:\e[0m ' R2
+read -e -p $'\e[1;32mWhich trimmer do you want to use (available options: fastp, trimmomatic):\e[0m ' trimmer
+read -e -p $'\e[1;32mWhich assembler you want to use (available options: megahit, spades, unicycler):\e[0m ' assembler
+read -e -p $'\e[1;32mPlease provide the number of CPU cores you want to use:\e[0m ' core
+
+echo -e "\033[92mThanks for providing the necessary information! Let's start!\033[0m"
+sleep 3s
+
+if [ "$trimmer" == "fastp" ]; then
+  #Fastp
+  echo -e "\033[92mStarting Quality Control of ${R1} and ${R2} using Fastp!\033[0m"
+  sleep 3s
+  fastp -i ${R1} -I ${R2} -o trimmed_${R1} -O trimmed_${R2}
+  rm fastp.html fastp.json
+elif [ "$trimmer" == "trimmomatic" ]; then
+  #Trimmomatic
+  echo -e "\033[92mStarting Quality Control of ${R1} and ${R2} using Trimmomatic!\033[0m"
+  sleep 3s
+  trimmomatic PE -phred33 -threads ${core} ${R1} ${R2} trimmed_${R1} trimmed_unpaired_${R1} trimmed_${R2} trimmed_unpaired_${R2} SLIDINGWINDOW:4:15
+  rm trimmed_unpaired_${R1} trimmed_unpaired_${R2} 
+fi
+
+#FastQC
+echo -e "\033[92mGenerating Quality Control Report for ${R1}, ${R2}, trimmed_${R1}, and trimmed_${R2} using FastQC!\033[0m"
+sleep 3s
+
+fastqc ${R1} ${R2} trimmed_${R1} trimmed_${R2}
+
+mv *.html ./OpenGenome_Output/
+rm *fastqc.zip
+
+if [ "$assembler" == "megahit" ]; then
+  #Megahit
+  echo -e "\033[92mStarting Genome Assembly using Megahit!\033[0m"
+  sleep 3s
+  megahit -1 trimmed_${R1} -2 trimmed_${R2} -o megahit -t ${core}
+  echo -e "\033[92mRemoving Unassembled Contigs!\033[0m"
+  sleep 3s
+  reformat.sh in=./megahit/final.contigs.fa out=./OpenGenome_Output/megahit_assembly.fa minlength=1000
+  rm -rf megahit
+  echo -e "\033[92mHere is a brief summary of the Megahit-assembled final genome:\033[0m"
+  n50 ./OpenGenome_Output/megahit_assembly.fa --format tsv --separator , > ./OpenGenome_Output/megahit_assembly_summary.csv
+  n50 ./OpenGenome_Output/megahit_assembly.fa -x
+elif [ "$assembler" == "spades" ]; then
+  #Spades
+  echo -e "\033[92mStarting Genome Assembly using Spades!\033[0m"                                                   
+  sleep 3s 
+  spades.py -1 trimmed_${R1} -2 trimmed_${R2} -o spades -t ${core}
+  echo -e "\033[92mRemoving Unassembled Contigs!\033[0m"
+  sleep 3s
+  reformat.sh in=./spades/contigs.fasta out=./OpenGenome_Output/spades_assembly.fa minlength=1000
+  rm -rf spades
+  echo -e "\033[92mHere is a brief summary of the Spades-assembled final genome:\033[0m"
+  n50 ./OpenGenome_Output/spades_assembly.fa --format tsv --separator , > ./OpenGenome_Output/spades_assembly_summary.csv
+  n50 ./OpenGenome_Output/spades_assembly.fa -x
+elif [ "$assembler" == "unicycler" ]; then
+  #Unicycler
+  echo -e "\033[92mStarting Genome Assembly using Unicycler!\033[0m"                                                   
+  sleep 3s 
+  unicycler -1 trimmed_${R1} -2 trimmed_${R2} -o unicycler -t ${core}
+  echo -e "\033[92mRemoving Unassembled Contigs!\033[0m"
+  sleep 3s
+  reformat.sh in=./unicycler/assembly.fasta out=./OpenGenome_Output/unicycler_assembly.fa minlength=1000
+  rm -rf unicycler
+  echo -e "\033[92mHere is a brief summary of the Unicycler-assembled final genome:\033[0m"
+  n50 ./OpenGenome_Output/unicycler_assembly.fa --format tsv --separator , > ./OpenGenome_Output/unicycler_assembly_summary.csv
+  n50 ./OpenGenome_Output/unicycler_assembly.fa -x
+fi
+
+duration=$SECONDS
+echo -e "\033[92mThanks for using OpenGenome! It took $(($duration / 60)) minutes and $(($duration % 60)) seconds to run! Check the output files in the OpenGenome_Output folder.\033[0m"
+rm -f trimmed_${R1} trimmed_${R2}
