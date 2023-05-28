@@ -1,5 +1,5 @@
 # OpenGenome
-OpenGenome is an easy-to-use multi-modal genome assembly tool that performs quality control, genome assembly, removal of unassembled contigs and provides a summary of the assembled genome (length of the genome, number of contigs, minimum and maximum length of the contigs, n50, n75, n90 statistics etc).
+OpenGenome is an easy-to-use multi-modal genome assembly tool that performs quality control, genome assembly, removal of unassembled contigs and provides a summary of the assembled genome (length of the genome, number of contigs, minimum and maximum length of the contigs, n50, n75, n90 statistics etc). If allows the user to choose trimmers (trimmomatic/ fastp) as well as assemblers (megahit/ spades/ unicycler) through a simple prompt. 
 # Installation
 If Conda package management software is not already installed on your computer, download and install it from the official Conda website (https://docs.conda.io/en/latest/miniconda.html).
 ## Step 1:
