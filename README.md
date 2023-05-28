@@ -11,7 +11,7 @@ Move the OpenGenome script file to /usr/local/bin/ using the following command:
 sudo mv OpenGenome /usr/local/bin/
 
 ## Step 3: 
-run the following command :
+Create the OpenGenome environment using the following command :
 
 conda env create -n OpenGenome -f OpenGenome.yml
 # Usage
